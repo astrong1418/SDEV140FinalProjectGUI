@@ -1,8 +1,8 @@
 """
 Program: Kevin's Creamy Confections Order Processing GUI
 Author: Ashley Strong
-Date Last Modified: 4/27/2024
-Version 1.1
+Date Last Modified: 5/4/2024
+Version 1.3
 This program creates a GUI for processing customer orders for the business Kevin's
 Creamy Confections. It allows several options, including dine-in or take-out, cone
 or sundae, and a variety of different topping selections. Then the program allows
@@ -45,9 +45,9 @@ frame3.pack(fill='both', expand=True)
 frame4.pack(fill='both', expand=True)
 
 notebook.add(frame1, text='Order Name') # adding the frames to the notebook
-notebook.add(frame2, text='Choose Your Treat!')
-notebook.add(frame3, text='Choose Your Toppings')
-notebook.add(frame4, text='Review Your Order')
+notebook.add(frame2, state = tk.DISABLED, text='Choose Your Treat!')
+notebook.add(frame3, state = tk.DISABLED, text='Choose Your Toppings')
+notebook.add(frame4, state = tk.DISABLED, text='Review Your Order')
 
 # FRAME 1 ORDER NAME, DINE-IN OR TAKE-OUT
 
@@ -73,7 +73,9 @@ def show_selected_dineortake():
         showinfo(
             title='Let\'s Create Your Treat!',
             message='Great! Create your treat on the next tab!')
+        enableframetwo() # enable frame 2
         selectframetwo() # continue to frame 2
+        notebook.tab(frame1, state = "disabled")
 
 # creating options for radio buttons
 selected_dineortake = tk.StringVar()
@@ -108,6 +110,9 @@ button.pack(padx=5, pady=5)
 def selectframetwo(): # function to continue to frame 2
     notebook.select(frame2)
 
+def enableframetwo(): # function to enable frame 2
+    notebook.tab(frame2, state='normal') 
+
 # FRAME 2 CONE OR SUNDAE
 
 topLabel = tk.Label(frame2, text="Choose Your Treat!", font=('Times New Roman', 18), background="light yellow") # Creating a headline
@@ -123,7 +128,9 @@ def show_selected_coneorsundae():
         showinfo(
             title='Let\'s Choose Your Toppings!',
             message='Great! Choose your toppings on the next tab!')
+        enableframethree() # enable frame 3
         selectframethree() # continue to next frame
+        notebook.tab(frame2, state = "disabled")
 
 selected_coneorsundae = tk.StringVar()
 choices = (('Cone', 'Cone'),
@@ -179,6 +186,9 @@ button.pack(padx=5, pady=5)
 
 def selectframethree(): # function to continue to frame 3
     notebook.select(frame3)
+
+def enableframethree(): # function to enable frame 3
+    notebook.tab(frame3, state='normal') 
 
 # FRAME 3 TOPPINGS
 
@@ -260,8 +270,10 @@ def show_selected_toppings(): # creating the askokcancel message box for frame 3
         showinfo(
             title='Let\'s Review!',
             message='Great! Let\'s review your order on the next tab!')
+        notebook.tab(frame3, state = "disabled")
+        enableframefour() # enables frame 4
         frame_four() # This function fills in all the information in the final notebook frame, shown below
-        selectframefour() # continues to next frame
+        selectframefour() # continues to frame 4
     del toppingList[:] #clear the list in case customer changes their mind, can recreate a new list of items
 
 # button after toppings check boxes choice
@@ -275,6 +287,9 @@ button.pack(padx=5, pady=5)
 def selectframefour(): # function to continue to next frame
     notebook.select(frame4)
 
+def enableframefour(): # function to enable frame 4
+    notebook.tab(frame4, state='normal') 
+
 
 # FRAME 4 ORDER REVIEW
 
@@ -284,10 +299,12 @@ topLabel.pack(pady=20)
 separator = ttk.Separator(frame4, orient='horizontal')
 separator.pack(fill='x', pady = 10)
 
-def frame_four():
+def frame_four(): # creates the info and places in the fourth frame
+
+    lambda: deleteframefourinfo() # this function will delete any previously entered information on frame 4
+
     orderLabel = ttk.Label(frame4, anchor = "center", background="light yellow", text=f'{nameVar.get()}', font = ('Times New Roman', 14))
     orderLabel.pack(pady=5) # Line for order name
-    
 
     dineortakeLabel = ttk.Label(frame4, anchor = "center", background="light yellow",text=f'{selected_dineortake.get()}', font = ('Times New Roman', 12))
     dineortakeLabel.pack(pady=5) # Line for dine-in or take-out
@@ -304,12 +321,13 @@ def frame_four():
     def show_submit(): # function for askokcancel message box after submit order button pressed
         answer = askokcancel(
         title='Submit Your Order?',
-        message='Would you like to submit your order?',
+        message='Would you like to submit your order? \nPress Cancel to start over.',
         icon=QUESTION)
         if answer:
             showinfo(
                 title='Your Order Has Been Submitted!',
                 message='Great choice! Your order has been submitted!')
+            exitwindow()
             startover() # returns to the first frame to begin again
 
         else:
@@ -320,21 +338,56 @@ def frame_four():
             startover() # destroy frame 4 labels, the submit button, and returns to frame 1 if order cancelled
             
     def startover(): # Function to destroy labels and submit button, and reset all variables to None if order is cancelled
-        orderLabel.destroy()
-        dineortakeLabel.destroy()
-        coneorsundaeLabel.destroy()
-        toppingsLabel.destroy()
-        scoopsLabel.destroy()
+        deleteframefourinfo()
         destroybutton1()
+        notebook.tab(frame1, state = "normal")
         selectframeone()
         resetname()
         resetdineortake()
         resetconeorsundae()
         resetscoops()
         resettoppings()
+        disablealltabs()
+
+    def deleteframefourinfo():
+        orderLabel.destroy()
+        dineortakeLabel.destroy()
+        coneorsundaeLabel.destroy()
+        toppingsLabel.destroy()
+        scoopsLabel.destroy()
 
     def selectframeone(): # returns to frame one
         notebook.select(frame1)
+
+    def disablealltabs():
+        notebook.tab(frame2, state='disable')
+        notebook.tab(frame3, state='disable')
+        notebook.tab(frame4, state='disable')
+
+    def exitwindow():
+        exitWindow = tk.Toplevel(root)
+        exitWindow.title('Exit?') # create title of exit window
+        exitWindow.geometry('600x200') # set the window size
+        exitWindow.resizable(False, False) # window cannot be resized
+        backgroundpic_label=tk.Label(exitWindow, background = "light blue") # setting the background color
+        backgroundpic_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        exitLabel = tk.Label(exitWindow, text="Would you like to exit the app? \nClick 'Yes' to exit or 'No' to start a new order: ", font=('Times New Roman', 16), background = "light blue") # Creating a label
+        exitLabel.pack(pady=20)
+
+        button1 = ttk.Button(
+        exitWindow,
+        text="Yes",
+        command= lambda: [exitWindow.destroy(), root.destroy()])
+
+        button1.pack(padx=5, pady=5)
+
+        button1 = ttk.Button(
+        exitWindow,
+        text="No",
+        command= exitWindow.destroy)
+
+        button1.pack(padx=5, pady=5)
 
     # button to confirm and submit order
     button1 = ttk.Button(
